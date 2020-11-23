@@ -1,38 +1,21 @@
 package com.jlcool.aliossflutter;
 
 import android.app.Activity;
-import android.util.Log;
-
 import com.alibaba.sdk.android.oss.ClientConfiguration;
-import com.alibaba.sdk.android.oss.ClientException;
 import com.alibaba.sdk.android.oss.OSS;
 import com.alibaba.sdk.android.oss.OSSClient;
-import com.alibaba.sdk.android.oss.ServiceException;
 import com.alibaba.sdk.android.oss.callback.OSSCompletedCallback;
 import com.alibaba.sdk.android.oss.callback.OSSProgressCallback;
-import com.alibaba.sdk.android.oss.common.OSSConstants;
 import com.alibaba.sdk.android.oss.common.auth.OSSCredentialProvider;
-import com.alibaba.sdk.android.oss.common.auth.OSSCustomSignerCredentialProvider;
 import com.alibaba.sdk.android.oss.common.auth.OSSFederationCredentialProvider;
-import com.alibaba.sdk.android.oss.common.auth.OSSFederationToken;
-import com.alibaba.sdk.android.oss.common.utils.IOUtils;
-import com.alibaba.sdk.android.oss.common.utils.OSSUtils;
 import com.alibaba.sdk.android.oss.internal.OSSAsyncTask;
-import com.alibaba.sdk.android.oss.model.DeleteObjectRequest;
-import com.alibaba.sdk.android.oss.model.DeleteObjectResult;
-import com.alibaba.sdk.android.oss.model.GetObjectRequest;
-import com.alibaba.sdk.android.oss.model.GetObjectResult;
 import com.alibaba.sdk.android.oss.model.HeadObjectRequest;
 import com.alibaba.sdk.android.oss.model.HeadObjectResult;
-import com.alibaba.sdk.android.oss.model.ListObjectsRequest;
-import com.alibaba.sdk.android.oss.model.ListObjectsResult;
-import com.alibaba.sdk.android.oss.model.OSSObjectSummary;
 import com.alibaba.sdk.android.oss.model.PutObjectRequest;
-import com.alibaba.sdk.android.oss.model.PutObjectResult;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry.Registrar;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,12 +27,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
-import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
+
+
+
 
 /**
  * AliossflutterPlugin
@@ -128,18 +111,13 @@ public class AliossflutterPlugin implements MethodCallHandler {
         endpoint = _call.argument("endpoint");
         final String accessKeyId = _call.argument("accessKeyId");
         final String accessKeySecret = _call.argument("accessKeySecret");
+        final String accessKeyToken = _call.argument("accessKeyToken");
         final String _id = _call.argument("id");
 
         final Map<String, String> m1 = new HashMap();
         m1.put("result", "success");
         m1.put("id", _id);
-
-        final OSSCustomSignerCredentialProvider credentialProvider = new OSSCustomSignerCredentialProvider() {
-            @Override
-            public String signContent(String content) {
-                return OSSUtils.sign(accessKeyId, accessKeySecret, content);
-            }
-        };
+        OSSCredentialProvider credentialProvider = new OSSStsTokenCredentialProvider(accessKeyId, accessKeySecret, accessKeyToken);
         oss = new OSSClient(registrar.context(), endpoint, credentialProvider);
         channel.invokeMethod("onInit", m1);
     }

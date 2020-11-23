@@ -58,25 +58,10 @@ OSSClient *oss ;
     endpoint = call.arguments[@"endpoint"];
     NSString *accessKeyId =call.arguments[@"accessKeyId"];
     NSString *accessKeySecret =call.arguments[@"accessKeySecret"];
+    NSString *accessKeyToken =call.arguments[@"accessKeyToken"];
     NSString *_id =call.arguments[@"id"];
     
-    id<OSSCredentialProvider> credential = [[OSSCustomSignerCredentialProvider alloc] initWithImplementedSigner:^NSString *(NSString *contentToSign, NSError *__autoreleasing *error) {
-        // 您需要在这里依照OSS规定的签名算法，实现加签一串字符内容，并把得到的签名传拼接上AccessKeyId后返回
-        // 一般实现是，将字符内容post到您的业务服务器，然后返回签名
-        // 如果因为某种原因加签失败，描述error信息后，返回nil
-        NSString *signature = [OSSUtil calBase64Sha1WithData:contentToSign withSecret:accessKeySecret]; // 这里是用SDK内的工具函数进行本地加签，建议您通过业务server实现远程加签
-        if (signature != nil) {
-            *error = nil;
-        } else {
-            NSDictionary *m1 = @{
-                                 @"result": @"fail",
-                                 @"id":_id
-                                 };
-            [channel invokeMethod:@"onInit" arguments:m1];
-            return nil;
-        }
-        return [NSString stringWithFormat:@"OSS %@:%@", accessKeyId, signature];
-    }];
+    id<OSSCredentialProvider> credential = [[OSSStsTokenCredentialProvider alloc] initWithAccessKeyId:accessKeyId secretKeyId:accessKeySecret securityToken:accessKeyToken];
     
     oss = [[OSSClient alloc] initWithEndpoint:endpoint credentialProvider:credential];
     NSDictionary *m1 = @{
