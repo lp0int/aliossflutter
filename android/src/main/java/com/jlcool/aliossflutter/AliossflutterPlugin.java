@@ -124,22 +124,19 @@ public class AliossflutterPlugin implements MethodCallHandler {
         }
     }
 
+
     private void secretInit() {
         endpoint = _call.argument("endpoint");
         final String accessKeyId = _call.argument("accessKeyId");
         final String accessKeySecret = _call.argument("accessKeySecret");
+        final String accessKeyToken = _call.argument("accessKeyToken");
         final String _id = _call.argument("id");
 
         final Map<String, String> m1 = new HashMap();
         m1.put("result", "success");
         m1.put("id", _id);
 
-        final OSSCustomSignerCredentialProvider credentialProvider = new OSSCustomSignerCredentialProvider() {
-            @Override
-            public String signContent(String content) {
-                return OSSUtils.sign(accessKeyId, accessKeySecret, content);
-            }
-        };
+        final OSSCredentialProvider credentialProvider = new OSSStsTokenCredentialProvider(accessKeyId, accessKeySecret, accessKeyToken);
         oss = new OSSClient(registrar.context(), endpoint, credentialProvider);
         channel.invokeMethod("onInit", m1);
     }
