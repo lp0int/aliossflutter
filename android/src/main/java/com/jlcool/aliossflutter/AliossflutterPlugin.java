@@ -11,10 +11,12 @@ import com.alibaba.sdk.android.oss.ServiceException;
 import com.alibaba.sdk.android.oss.callback.OSSCompletedCallback;
 import com.alibaba.sdk.android.oss.callback.OSSProgressCallback;
 import com.alibaba.sdk.android.oss.common.OSSConstants;
+import com.alibaba.sdk.android.oss.common.auth.OSSAuthCredentialsProvider;
 import com.alibaba.sdk.android.oss.common.auth.OSSCredentialProvider;
 import com.alibaba.sdk.android.oss.common.auth.OSSCustomSignerCredentialProvider;
 import com.alibaba.sdk.android.oss.common.auth.OSSFederationCredentialProvider;
 import com.alibaba.sdk.android.oss.common.auth.OSSFederationToken;
+import com.alibaba.sdk.android.oss.common.auth.OSSStsTokenCredentialProvider;
 import com.alibaba.sdk.android.oss.common.utils.IOUtils;
 import com.alibaba.sdk.android.oss.common.utils.OSSUtils;
 import com.alibaba.sdk.android.oss.internal.OSSAsyncTask;
@@ -124,7 +126,6 @@ public class AliossflutterPlugin implements MethodCallHandler {
         }
     }
 
-
     private void secretInit() {
         endpoint = _call.argument("endpoint");
         final String accessKeyId = _call.argument("accessKeyId");
@@ -136,7 +137,8 @@ public class AliossflutterPlugin implements MethodCallHandler {
         m1.put("result", "success");
         m1.put("id", _id);
 
-        final OSSCredentialProvider credentialProvider = new OSSStsTokenCredentialProvider(accessKeyId, accessKeySecret, accessKeyToken);
+        OSSCredentialProvider credentialProvider = new OSSStsTokenCredentialProvider(accessKeyId, accessKeySecret, accessKeyToken);
+
         oss = new OSSClient(registrar.context(), endpoint, credentialProvider);
         channel.invokeMethod("onInit", m1);
     }
